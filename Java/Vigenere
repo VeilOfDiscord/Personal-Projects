@@ -1,0 +1,129 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+
+public class vigenere {
+/**
+ * Vigenere Cipher Program
+ * 
+ * @author Nathaell Avril Leman
+ * @version 1.5
+ */
+    public static void main(String[] Args) throws Exception {
+
+        File key_file = new File(Args[0]);
+        File plain_file = new File(Args[1]);
+
+        String key = new String();
+        String plaintext = new String();
+        String ciphertext = new String();
+
+        key = reading_files(key, key_file);
+        plaintext = reading_files(plaintext, plain_file);
+
+        ciphertext = encryption(initialize(plaintext), initialize(key, initialize(plaintext)));
+        printout(key.toLowerCase().replaceAll("[\\W0-9/_]", ""), plaintext, ciphertext);
+    }
+//----------------------------------------------Main methods------------------------------------------------------------
+    static void printout(String key, String pt, String ct)
+    {    
+        System.out.println("\n\nVigenere Key:\n\n" + cookie_cutter(key) + "\n\n");
+        System.out.println("Plaintext:\n\n" + cookie_cutter(initialize(pt)) + "\n\n");
+        System.out.println("Ciphertext:\n\n" + cookie_cutter(ct));
+    }
+
+    static String reading_files(String str, File inFile)
+    {
+        try
+        {
+            BufferedReader br = new BufferedReader(new FileReader(inFile));
+            String line = new String();
+
+            while((line = br.readLine()) != null)
+            {
+                str = str+line;
+            }
+
+            br.close();
+        }
+        catch ( Exception e ) {e.printStackTrace();}
+        
+        return str;
+    }
+//----------------------------------------Start of Plaintext methods----------------------------------------------------
+    static String initialize(String str) // Initialization for plaintext
+    {
+    /** 
+     * Method to pad the rest of the plaintext with 'x'.
+     * All the characters in the input are changed to
+     * lowercases and all the whitespace & punctuation removed. 
+     */
+        str = str.toLowerCase().replaceAll("[\\W0-9/_]", "");
+
+        if(str.length() < 512){
+            str = padding_plaintext(str);
+        }
+        else if(str.length() > 512){
+            str = str.substring(0,512);
+        }
+        return str;
+    }
+
+    static String initialize(String key, String str) // Initialization for keys
+    {
+        key = key.toLowerCase().replaceAll("[\\W0-9/_]", "");
+        key = key(str, key);
+        return key;
+    }
+
+    static String cookie_cutter(String cookie)
+    {
+        cookie = cookie.replaceAll(".{80}(?=.)", "$0\n");
+        return cookie;
+    }
+
+    static String padding_plaintext(String str)
+    {
+        if(str.length() < 512)
+        {
+            for(int i = str.length(); i < 512; i++)
+            {
+                str += 'x';
+            }
+        }
+        return str;
+    }
+//-----------------------------------------End of Plaintext methods-----------------------------------------------------
+//-------------------------------------Start of Encryption + key methods------------------------------------------------
+    static String key(String str, String key)
+    {
+        int x = str.length(); 
+  
+        for (int i = 0; ; i++) 
+        { 
+            if (x == i) 
+                i = 0; 
+            if (key.length() == str.length()) 
+                break; 
+            key+=(key.charAt(i)); 
+        } 
+        return key; 
+    }  
+
+    static String encryption(String str, String key)
+    {
+        String ciphertext = new String();
+        // System.out.println(cookie_cutter(str) + "\n and \n" + cookie_cutter(key));
+
+        for(int i = 0, j = 0; i < str.length(); i++)
+        {
+            char c = str.charAt(i);
+			ciphertext += (char)(((c - 97) + (key.charAt(j)-97)) % 26 + 97);
+			j = ++j % key.length();
+            // System.out.println(str.charAt(i) + " and " + key.charAt(i) + " equals " + str.charAt(i)+key.charAt(i));
+            // System.out.println((int)'f' + " " + (int)'i');
+        }
+        return ciphertext;
+    }
+}
